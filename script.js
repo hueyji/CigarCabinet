@@ -4,22 +4,18 @@ const layoutMeta = {
   straight: {
     name: "一字型",
     activeSides: ["frontLength"],
-    rule: "按面积计价",
   },
   leftL: {
     name: "左 L 型",
     activeSides: ["frontLength", "leftLength"],
-    rule: "拐角空间计入面积",
   },
   rightL: {
     name: "右 L 型",
     activeSides: ["frontLength", "rightLength"],
-    rule: "拐角空间计入面积",
   },
   uShape: {
     name: "U 字型",
     activeSides: ["frontLength", "leftLength", "rightLength"],
-    rule: "拐角空间计入面积",
   },
 };
 
@@ -59,10 +55,7 @@ const elements = {
   totalPrice: document.getElementById("totalPrice"),
   priceBadge: document.querySelector(".price-badge"),
   quoteTotal: document.getElementById("quoteTotal"),
-  cornerRule: document.getElementById("cornerRule"),
-  overlapText: document.getElementById("overlapText"),
   grossLengthText: document.getElementById("grossLengthText"),
-  deductionText: document.getElementById("deductionText"),
   effectiveLengthText: document.getElementById("effectiveLengthText"),
   billableAreaText: document.getElementById("billableAreaText"),
   materialText: document.getElementById("materialText"),
@@ -270,16 +263,12 @@ function renderFootprintScale() {
 function renderQuote() {
   const layout = activeLayout();
   const grossLength = getGrossLength();
-  const deduction = getDeduction();
   const effectiveLength = getEffectiveLength();
   const billableArea = getBillableArea();
   const totalPrice = getTotalPrice();
 
   elements.layoutName.textContent = layout.name;
-  elements.cornerRule.textContent = layout.rule;
-  elements.overlapText.textContent = "拐角计入面积";
   elements.grossLengthText.textContent = formatMm(grossLength);
-  elements.deductionText.textContent = "不扣减";
   elements.effectiveLengthText.textContent = formatMm(effectiveLength);
   elements.billableAreaText.textContent = formatArea(billableArea);
   const quoteText = state.quoteUnlocked ? formatMoney(totalPrice) : "输入手机号查看";
