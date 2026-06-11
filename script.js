@@ -4,28 +4,26 @@ const layoutMeta = {
   straight: {
     name: "一字型",
     activeSides: ["frontLength"],
-    cornerCount: 0,
-    rule: "无转角扣重",
+    rule: "按面积计价",
   },
   leftL: {
     name: "左 L 型",
     activeSides: ["frontLength", "leftLength"],
-    cornerCount: 1,
-    rule: "L 型扣 1 个柜深",
+    rule: "拐角空间计入面积",
   },
   rightL: {
     name: "右 L 型",
     activeSides: ["frontLength", "rightLength"],
-    cornerCount: 1,
-    rule: "L 型扣 1 个柜深",
+    rule: "拐角空间计入面积",
   },
   uShape: {
     name: "U 字型",
     activeSides: ["frontLength", "leftLength", "rightLength"],
-    cornerCount: 2,
-    rule: "U 型扣 2 个柜深",
+    rule: "拐角空间计入面积",
   },
 };
+
+const FIXED_DEPTH_MM = 400;
 
 const materialMeta = {
   veneer: "雪松木贴皮",
@@ -38,7 +36,7 @@ const state = {
   leftLength: 1800,
   rightLength: 1800,
   height: 2400,
-  depth: 500,
+  depth: FIXED_DEPTH_MM,
   material: "veneer",
   prices: {
     veneer: 1800,
@@ -55,7 +53,6 @@ const elements = {
   leftLengthInput: document.getElementById("leftLengthInput"),
   rightLengthInput: document.getElementById("rightLengthInput"),
   heightInput: document.getElementById("heightInput"),
-  depthInput: document.getElementById("depthInput"),
   materialSelect: document.getElementById("materialSelect"),
   phoneInput: document.getElementById("phoneInput"),
   viewQuoteButton: document.getElementById("viewQuoteButton"),
@@ -162,7 +159,7 @@ function getGrossLength() {
 }
 
 function getDeduction() {
-  return activeLayout().cornerCount * toNumber(state.depth);
+  return 0;
 }
 
 function getEffectiveLength() {
@@ -194,7 +191,7 @@ function setValue(key, value) {
 }
 
 function syncStaticInputs() {
-  ["frontLength", "leftLength", "rightLength", "height", "depth"].forEach((key) => {
+  ["frontLength", "leftLength", "rightLength", "height"].forEach((key) => {
     elements[`${key}Input`].value = state[key];
   });
   elements.materialSelect.value = state.material;
@@ -214,7 +211,7 @@ function renderPreviewScale() {
   const leftLength = previewNumber(state.leftLength, 1800, 300, 12000);
   const rightLength = previewNumber(state.rightLength, 1800, 300, 12000);
   const height = previewNumber(state.height, 2400, 800, 5000);
-  const depth = previewNumber(state.depth, 500, 100, 1500);
+  const depth = previewNumber(state.depth, FIXED_DEPTH_MM, 100, 1500);
   const frontRatio = frontLength / 12000;
   const sideMax = Math.max(leftLength, rightLength);
   const sideRatio = sideMax / 12000;
@@ -242,9 +239,9 @@ function renderQuote() {
 
   elements.layoutName.textContent = layout.name;
   elements.cornerRule.textContent = layout.rule;
-  elements.overlapText.textContent = `扣 ${layout.cornerCount} 个柜深`;
+  elements.overlapText.textContent = "拐角计入面积";
   elements.grossLengthText.textContent = formatMm(grossLength);
-  elements.deductionText.textContent = formatMm(deduction);
+  elements.deductionText.textContent = "不扣减";
   elements.effectiveLengthText.textContent = formatMm(effectiveLength);
   elements.billableAreaText.textContent = formatArea(billableArea);
   const quoteText = state.quoteUnlocked ? formatMoney(totalPrice) : "输入手机号查看";
@@ -263,13 +260,10 @@ function renderQuote() {
 
   const warnings = [];
   const activeSideValues = layout.activeSides.map((key) => toNumber(state[key])).filter((value) => value > 0);
-  if (layout.cornerCount > 0 && activeSideValues.length && toNumber(state.depth) >= Math.min(...activeSideValues) / 2) {
-    warnings.push("柜深接近某条边长度的一半，转角处可能需要单独确认结构。");
-  }
   if (toNumber(state.height) > 2800) {
     warnings.push("高度超过 2800 mm，建议确认现场层高、运输和安装分段。");
   }
-  if (!activeSideValues.length || toNumber(state.height) <= 0 || toNumber(state.depth) <= 0) {
+  if (!activeSideValues.length || toNumber(state.height) <= 0) {
     warnings.push("请填写有效尺寸后查看报价。");
   }
   elements.warningText.textContent = warnings.join(" ");
@@ -288,7 +282,7 @@ function sync3dPreview() {
       leftLength: previewNumber(state.leftLength, 1800, 300, 12000),
       rightLength: previewNumber(state.rightLength, 1800, 300, 12000),
       height: previewNumber(state.height, 2400, 800, 5000),
-      depth: previewNumber(state.depth, 500, 100, 1500),
+      depth: previewNumber(state.depth, FIXED_DEPTH_MM, 100, 1500),
     };
     cabinetPreview.update({
       ...previewConfig,
@@ -387,7 +381,7 @@ elements.layoutButtons.forEach((button) => {
   });
 });
 
-["frontLength", "leftLength", "rightLength", "height", "depth"].forEach(bindValue);
+["frontLength", "leftLength", "rightLength", "height"].forEach(bindValue);
 
 elements.materialSelect.addEventListener("change", (event) => {
   state.material = event.target.value;

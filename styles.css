@@ -260,6 +260,11 @@ body[data-layout="rightL"] [data-field="leftLength"] {
   font-weight: 700;
 }
 
+.field-title .static-field-label {
+  color: var(--text);
+  font-size: 15px;
+}
+
 .number-row {
   display: flex;
   align-items: center;
@@ -291,6 +296,19 @@ body[data-layout="rightL"] [data-field="leftLength"] {
   font-size: 13px;
   font-weight: 700;
   text-align: right;
+}
+
+.static-value {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--line-soft);
+  border-radius: 6px;
+  background: #f8f0e6;
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 800;
+  padding: 0 11px;
 }
 
 .select-input {

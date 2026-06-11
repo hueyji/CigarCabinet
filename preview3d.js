@@ -291,8 +291,8 @@ function getRuns(config) {
   const depth = config.depth * MM_TO_UNIT;
   const height = config.height * MM_TO_UNIT;
   const frontLength = config.frontLength * MM_TO_UNIT;
-  const leftLength = Math.max(MIN_SIDE_MM, config.leftLength - config.depth) * MM_TO_UNIT;
-  const rightLength = Math.max(MIN_SIDE_MM, config.rightLength - config.depth) * MM_TO_UNIT;
+  const leftLength = Math.max(MIN_SIDE_MM, config.leftLength) * MM_TO_UNIT;
+  const rightLength = Math.max(MIN_SIDE_MM, config.rightLength) * MM_TO_UNIT;
 
   const runs = [
     {
