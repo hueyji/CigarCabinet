@@ -834,6 +834,13 @@ body[data-layout="uShape"] .tag-right {
 }
 
 .footprint {
+  --fp-front-left: 56px;
+  --fp-right-left: 240px;
+  --fp-front-width: 208px;
+  --fp-left-height: 86px;
+  --fp-right-height: 86px;
+  --fp-depth: 24px;
+  --fp-bottom: 18px;
   position: relative;
   height: 156px;
   margin-top: 10px;
@@ -857,42 +864,41 @@ body[data-layout="uShape"] .tag-right {
 }
 
 .fp-front {
-  left: 50%;
-  bottom: 26px;
-  width: 66%;
-  height: 24px;
-  transform: translateX(-50%);
+  left: var(--fp-front-left);
+  bottom: var(--fp-bottom);
+  width: var(--fp-front-width);
+  height: var(--fp-depth);
 }
 
 .fp-left {
-  left: calc(17% - 12px);
-  bottom: 26px;
-  width: 24px;
-  height: 86px;
+  left: var(--fp-front-left);
+  bottom: var(--fp-bottom);
+  width: var(--fp-depth);
+  height: var(--fp-left-height);
 }
 
 .fp-right {
-  right: calc(17% - 12px);
-  bottom: 26px;
-  width: 24px;
-  height: 86px;
+  left: var(--fp-right-left);
+  bottom: var(--fp-bottom);
+  width: var(--fp-depth);
+  height: var(--fp-right-height);
 }
 
 .fp-corner {
-  bottom: 26px;
-  width: 24px;
-  height: 24px;
+  bottom: var(--fp-bottom);
+  width: var(--fp-depth);
+  height: var(--fp-depth);
   background:
     repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.24) 0 3px, transparent 3px 7px),
     #9c5d32;
 }
 
 .fp-left-corner {
-  left: calc(17% - 12px);
+  left: var(--fp-front-left);
 }
 
 .fp-right-corner {
-  right: calc(17% - 12px);
+  left: var(--fp-right-left);
 }
 
 body[data-layout="straight"] .fp-left,

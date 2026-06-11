@@ -74,6 +74,7 @@ const elements = {
   depthText: document.getElementById("depthText"),
   heightText: document.getElementById("heightText"),
   unitPriceText: document.getElementById("unitPriceText"),
+  footprint: document.getElementById("footprint"),
   threePreview: document.getElementById("threePreview"),
   threeWrap: document.getElementById("threeWrap"),
   threeHint: document.getElementById("threeHint"),
@@ -131,6 +132,11 @@ function previewNumber(value, fallback, min, max) {
   const number = Number(value);
   if (!Number.isFinite(number) || number <= 0) return fallback;
   return clamp(number, min, max);
+}
+
+function footprintNumber(value, fallback) {
+  const number = toNumber(value);
+  return number > 0 ? number : fallback;
 }
 
 function formatMm(value) {
@@ -229,6 +235,38 @@ function renderPreviewScale() {
   document.documentElement.style.setProperty("--run-depth", `${runDepth}px`);
 }
 
+function renderFootprintScale() {
+  if (!elements.footprint) return;
+
+  const layout = activeLayout();
+  const frontLength = footprintNumber(state.frontLength, 3000);
+  const leftLength = layout.activeSides.includes("leftLength") ? footprintNumber(state.leftLength, 1800) : 0;
+  const rightLength = layout.activeSides.includes("rightLength") ? footprintNumber(state.rightLength, 1800) : 0;
+  const sideLength = Math.max(leftLength, rightLength, FIXED_DEPTH_MM);
+  const boxWidth = elements.footprint.clientWidth || 320;
+  const boxHeight = elements.footprint.clientHeight || 156;
+  const horizontalPadding = 18;
+  const verticalPadding = 18;
+  const bottom = 18;
+  const maxWidth = Math.max(120, boxWidth - horizontalPadding * 2);
+  const maxHeight = Math.max(80, boxHeight - verticalPadding - bottom);
+  const scale = Math.min(maxWidth / Math.max(frontLength, FIXED_DEPTH_MM), maxHeight / sideLength);
+  const depthPx = Math.round(clamp(FIXED_DEPTH_MM * scale, 12, 28));
+  const frontPx = Math.round(clamp(frontLength * scale, depthPx * 3, maxWidth));
+  const leftPx = Math.round(leftLength > 0 ? clamp(leftLength * scale, depthPx, maxHeight) : depthPx);
+  const rightPx = Math.round(rightLength > 0 ? clamp(rightLength * scale, depthPx, maxHeight) : depthPx);
+  const frontLeft = Math.round((boxWidth - frontPx) / 2);
+  const rightLeft = Math.round(frontLeft + frontPx - depthPx);
+
+  elements.footprint.style.setProperty("--fp-front-left", `${frontLeft}px`);
+  elements.footprint.style.setProperty("--fp-right-left", `${rightLeft}px`);
+  elements.footprint.style.setProperty("--fp-front-width", `${frontPx}px`);
+  elements.footprint.style.setProperty("--fp-left-height", `${leftPx}px`);
+  elements.footprint.style.setProperty("--fp-right-height", `${rightPx}px`);
+  elements.footprint.style.setProperty("--fp-depth", `${depthPx}px`);
+  elements.footprint.style.setProperty("--fp-bottom", `${bottom}px`);
+}
+
 function renderQuote() {
   const layout = activeLayout();
   const grossLength = getGrossLength();
@@ -293,6 +331,7 @@ function sync3dPreview() {
 function render() {
   renderLayoutButtons();
   renderPreviewScale();
+  renderFootprintScale();
   renderQuote();
   sync3dPreview();
 }
@@ -396,6 +435,8 @@ elements.phoneInput.addEventListener("input", (event) => {
 });
 
 elements.viewQuoteButton.addEventListener("click", unlockQuote);
+
+window.addEventListener("resize", renderFootprintScale);
 
 loadSettings();
 syncStaticInputs();
