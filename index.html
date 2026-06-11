@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#f5f2ec" />
+    <title>雪茄柜在线配置报价</title>
+    <meta name="description" content="选择雪茄柜布局，输入尺寸和每平米报价，实时预览并计算价格。" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body data-layout="straight">
+    <main class="app-shell">
+      <aside class="control-panel" aria-label="雪茄柜配置">
+        <section class="brand-block">
+          <h1>雪茄柜在线配置</h1>
+        </section>
+
+        <section class="section-block">
+          <div class="section-title">
+            <h2>柜体布局</h2>
+            <span id="layoutName">一字型</span>
+          </div>
+          <div class="layout-grid" id="layoutGrid" role="radiogroup" aria-label="选择柜体布局">
+            <button class="layout-option is-active" type="button" data-layout="straight" aria-pressed="true">
+              <span class="layout-icon icon-straight"><i></i></span>
+              <strong>一字型</strong>
+            </button>
+            <button class="layout-option" type="button" data-layout="leftL" aria-pressed="false">
+              <span class="layout-icon icon-left-l"><i></i><i></i></span>
+              <strong>左 L 型</strong>
+            </button>
+            <button class="layout-option" type="button" data-layout="rightL" aria-pressed="false">
+              <span class="layout-icon icon-right-l"><i></i><i></i></span>
+              <strong>右 L 型</strong>
+            </button>
+            <button class="layout-option" type="button" data-layout="uShape" aria-pressed="false">
+              <span class="layout-icon icon-u"><i></i><i></i><i></i></span>
+              <strong>U 字型</strong>
+            </button>
+          </div>
+        </section>
+
+        <section class="section-block">
+          <div class="section-title">
+            <h2>尺寸与单价</h2>
+            <span>mm / 元每平米</span>
+          </div>
+
+          <form class="dimension-form" id="dimensionForm">
+            <div class="field-card">
+              <div class="field-title">
+                <label for="frontLengthInput">正面长度</label>
+                <span>800 - 9000</span>
+              </div>
+              <div class="number-row">
+                <input id="frontLengthInput" type="number" inputmode="numeric" min="800" max="9000" step="10" />
+                <span>mm</span>
+              </div>
+            </div>
+
+            <div class="field-card" data-field="leftLength">
+              <div class="field-title">
+                <label for="leftLengthInput">左侧长度</label>
+                <span>800 - 6000</span>
+              </div>
+              <div class="number-row">
+                <input id="leftLengthInput" type="number" inputmode="numeric" min="800" max="6000" step="10" />
+                <span>mm</span>
+              </div>
+            </div>
+
+            <div class="field-card" data-field="rightLength">
+              <div class="field-title">
+                <label for="rightLengthInput">右侧长度</label>
+                <span>800 - 6000</span>
+              </div>
+              <div class="number-row">
+                <input id="rightLengthInput" type="number" inputmode="numeric" min="800" max="6000" step="10" />
+                <span>mm</span>
+              </div>
+            </div>
+
+            <div class="field-card">
+              <div class="field-title">
+                <label for="heightInput">柜体高度</label>
+                <span>1200 - 3200</span>
+              </div>
+              <div class="number-row">
+                <input id="heightInput" type="number" inputmode="numeric" min="1200" max="3200" step="10" />
+                <span>mm</span>
+              </div>
+            </div>
+
+            <div class="field-card">
+              <div class="field-title">
+                <label for="depthInput">柜体深度</label>
+                <span>300 - 900</span>
+              </div>
+              <div class="number-row">
+                <input id="depthInput" type="number" inputmode="numeric" min="300" max="900" step="10" />
+                <span>mm</span>
+              </div>
+            </div>
+
+            <div class="field-card">
+              <div class="field-title">
+                <label for="materialSelect">柜体材料</label>
+                <span>按材料报价</span>
+              </div>
+              <div class="number-row">
+                <select id="materialSelect" class="select-input">
+                  <option value="veneer">雪松木贴皮</option>
+                  <option value="solid">雪松木实木</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-card">
+              <div class="field-title">
+                <label for="phoneInput">手机号</label>
+                <span>查看报价必填</span>
+              </div>
+              <div class="number-row">
+                <input id="phoneInput" type="tel" inputmode="tel" autocomplete="tel" placeholder="请输入手机号" />
+              </div>
+              <p class="field-help">输入有效手机号后可查看并保存报价单。</p>
+            </div>
+          </form>
+        </section>
+      </aside>
+
+      <section class="preview-panel" aria-label="雪茄柜预览和报价">
+        <header class="preview-header">
+          <div>
+            <h2>效果预览</h2>
+          </div>
+          <div class="price-badge">
+            <span>预估总价</span>
+            <strong id="totalPrice">¥0</strong>
+          </div>
+        </header>
+
+        <div class="visual-stage">
+          <div class="three-wrap" id="threeWrap">
+            <canvas id="threePreview" aria-label="雪茄柜三维预览"></canvas>
+            <div class="three-hint" id="threeHint">正在加载 3D 预览...</div>
+          </div>
+          <div class="cabinet-scene" id="cabinetScene">
+            <div class="cabinet-run run-left">
+              <div class="run-depth"></div>
+              <div class="run-face">
+                <span class="warm-light light-top"></span>
+                <span class="warm-light light-middle"></span>
+                <div class="open-bays"></div>
+                <div class="tray-zone"></div>
+                <div class="lower-doors"></div>
+              </div>
+            </div>
+
+            <div class="cabinet-run run-front">
+              <div class="run-depth"></div>
+              <div class="run-face">
+                <span class="warm-light light-top"></span>
+                <span class="warm-light light-middle"></span>
+                <div class="open-bays"></div>
+                <div class="tray-zone"></div>
+                <div class="lower-doors"></div>
+              </div>
+            </div>
+
+            <div class="cabinet-run run-right">
+              <div class="run-depth"></div>
+              <div class="run-face">
+                <span class="warm-light light-top"></span>
+                <span class="warm-light light-middle"></span>
+                <div class="open-bays"></div>
+                <div class="tray-zone"></div>
+                <div class="lower-doors"></div>
+              </div>
+            </div>
+
+            <div class="dimension-tag tag-front">
+              正面 <strong id="frontTag">3000 mm</strong>
+            </div>
+            <div class="dimension-tag tag-left">
+              左侧 <strong id="leftTag">1800 mm</strong>
+            </div>
+            <div class="dimension-tag tag-right">
+              右侧 <strong id="rightTag">1800 mm</strong>
+            </div>
+            <div class="dimension-tag tag-height">
+              高 <strong id="heightTag">2400 mm</strong>
+            </div>
+          </div>
+        </div>
+        <p class="preview-note">效果仅供参考，实际效果以生产图为准</p>
+
+        <div class="result-grid">
+          <section class="quote-card quote-main">
+            <div class="quote-title">
+              <h2>报价计算</h2>
+              <span id="cornerRule">无转角扣重</span>
+            </div>
+            <div class="quote-total" id="quoteTotal">¥0</div>
+            <button class="quote-button" id="viewQuoteButton" type="button">查看报价</button>
+            <div class="quote-lines">
+              <div>
+                <span>原始总长度</span>
+                <strong id="grossLengthText">3000 mm</strong>
+              </div>
+              <div>
+                <span>转角扣减</span>
+                <strong id="deductionText">0 mm</strong>
+              </div>
+              <div>
+                <span>有效计价长度</span>
+                <strong id="effectiveLengthText">3000 mm</strong>
+              </div>
+              <div>
+                <span>材料</span>
+                <strong id="materialText">雪松木贴皮</strong>
+              </div>
+              <div>
+                <span>计价面积</span>
+                <strong id="billableAreaText">7.20 ㎡</strong>
+              </div>
+            </div>
+            <p id="warningText" class="warning-text"></p>
+          </section>
+
+          <section class="footprint-card">
+            <div class="quote-title">
+              <h2>俯视布局</h2>
+              <span id="overlapText">扣 0 个柜深</span>
+            </div>
+            <div class="footprint" id="footprint">
+              <div class="fp-run fp-front"></div>
+              <div class="fp-run fp-left"></div>
+              <div class="fp-run fp-right"></div>
+              <div class="fp-corner fp-left-corner"></div>
+              <div class="fp-corner fp-right-corner"></div>
+            </div>
+            <div class="mini-specs">
+              <div>
+                <span>柜深</span>
+                <strong id="depthText">500 mm</strong>
+              </div>
+              <div>
+                <span>柜高</span>
+                <strong id="heightText">2400 mm</strong>
+              </div>
+              <div>
+                <span>单价</span>
+                <strong id="unitPriceText">¥1800/㎡</strong>
+              </div>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      window.setTimeout(function () {
+        var wrap = document.getElementById("threeWrap");
+        if (wrap && !wrap.classList.contains("is-ready")) {
+          wrap.classList.add("is-error");
+        }
+      }, 3800);
+    </script>
+    <script type="module" src="./script.js"></script>
+  </body>
+</html>
