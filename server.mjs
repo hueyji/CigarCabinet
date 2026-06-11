@@ -4,7 +4,7 @@ import { extname, join, normalize } from "node:path";
 import { randomUUID } from "node:crypto";
 
 const root = process.cwd();
-const port = 3000;
+const port = Number(process.env.PORT || 3000);
 const dataDir = join(root, "data");
 const dataFile = join(dataDir, "store.json");
 const salesPassword = "gujiaying";
