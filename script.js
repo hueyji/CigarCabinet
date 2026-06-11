@@ -32,14 +32,6 @@ const materialMeta = {
   solid: "雪松木实木",
 };
 
-const limits = {
-  frontLength: { min: 800, max: 9000 },
-  leftLength: { min: 800, max: 6000 },
-  rightLength: { min: 800, max: 6000 },
-  height: { min: 1200, max: 3200 },
-  depth: { min: 300, max: 900 },
-};
-
 const state = {
   layout: "straight",
   frontLength: 3000,
@@ -128,8 +120,25 @@ function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
 
+function toNumber(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : 0;
+}
+
+function toDimensionValue(value) {
+  const number = toNumber(value);
+  return number > 0 ? number : 0;
+}
+
+function previewNumber(value, fallback, min, max) {
+  const number = Number(value);
+  if (!Number.isFinite(number) || number <= 0) return fallback;
+  return clamp(number, min, max);
+}
+
 function formatMm(value) {
-  return `${Math.round(value).toLocaleString("zh-CN")} mm`;
+  const number = toNumber(value);
+  return `${Math.round(number).toLocaleString("zh-CN")} mm`;
 }
 
 function formatArea(value) {
@@ -149,11 +158,11 @@ function activeLayout() {
 }
 
 function getGrossLength() {
-  return activeLayout().activeSides.reduce((sum, key) => sum + state[key], 0);
+  return activeLayout().activeSides.reduce((sum, key) => sum + toNumber(state[key]), 0);
 }
 
 function getDeduction() {
-  return activeLayout().cornerCount * state.depth;
+  return activeLayout().cornerCount * toNumber(state.depth);
 }
 
 function getEffectiveLength() {
@@ -161,7 +170,7 @@ function getEffectiveLength() {
 }
 
 function getBillableArea() {
-  return (getEffectiveLength() / 1000) * (state.height / 1000);
+  return (getEffectiveLength() / 1000) * (toNumber(state.height) / 1000);
 }
 
 function getTotalPrice() {
@@ -179,12 +188,12 @@ function setLayout(layout) {
 }
 
 function setValue(key, value) {
-  const next = clamp(Number(value), limits[key].min, limits[key].max);
-  state[key] = next;
+  state[key] = value;
+  state.quoteUnlocked = false;
   render();
 }
 
-function syncInputs() {
+function syncStaticInputs() {
   ["frontLength", "leftLength", "rightLength", "height", "depth"].forEach((key) => {
     elements[`${key}Input`].value = state[key];
   });
@@ -201,16 +210,21 @@ function renderLayoutButtons() {
 }
 
 function renderPreviewScale() {
-  const frontRatio = state.frontLength / limits.frontLength.max;
-  const sideMax = Math.max(state.leftLength, state.rightLength);
-  const sideRatio = sideMax / limits.leftLength.max;
-  const heightRatio = state.height / limits.height.max;
-  const depthRatio = state.depth / limits.depth.max;
+  const frontLength = previewNumber(state.frontLength, 3000, 500, 12000);
+  const leftLength = previewNumber(state.leftLength, 1800, 300, 12000);
+  const rightLength = previewNumber(state.rightLength, 1800, 300, 12000);
+  const height = previewNumber(state.height, 2400, 800, 5000);
+  const depth = previewNumber(state.depth, 500, 100, 1500);
+  const frontRatio = frontLength / 12000;
+  const sideMax = Math.max(leftLength, rightLength);
+  const sideRatio = sideMax / 12000;
+  const heightRatio = height / 5000;
+  const depthRatio = depth / 1500;
 
-  const frontWidth = Math.round(180 + frontRatio * 260);
-  const sideWidth = Math.round(110 + sideRatio * 150);
-  const runHeight = Math.round(280 + heightRatio * 180);
-  const runDepth = Math.round(36 + depthRatio * 52);
+  const frontWidth = Math.round(180 + clamp(frontRatio, 0, 1) * 260);
+  const sideWidth = Math.round(110 + clamp(sideRatio, 0, 1) * 150);
+  const runHeight = Math.round(280 + clamp(heightRatio, 0, 1) * 180);
+  const runDepth = Math.round(36 + clamp(depthRatio, 0, 1) * 52);
 
   document.documentElement.style.setProperty("--front-width", `${frontWidth}px`);
   document.documentElement.style.setProperty("--side-width", `${sideWidth}px`);
@@ -248,11 +262,15 @@ function renderQuote() {
   elements.materialText.textContent = materialMeta[state.material];
 
   const warnings = [];
-  if (layout.cornerCount > 0 && state.depth >= Math.min(...layout.activeSides.map((key) => state[key])) / 2) {
+  const activeSideValues = layout.activeSides.map((key) => toNumber(state[key])).filter((value) => value > 0);
+  if (layout.cornerCount > 0 && activeSideValues.length && toNumber(state.depth) >= Math.min(...activeSideValues) / 2) {
     warnings.push("柜深接近某条边长度的一半，转角处可能需要单独确认结构。");
   }
-  if (state.height > 2800) {
+  if (toNumber(state.height) > 2800) {
     warnings.push("高度超过 2800 mm，建议确认现场层高、运输和安装分段。");
+  }
+  if (!activeSideValues.length || toNumber(state.height) <= 0 || toNumber(state.depth) <= 0) {
+    warnings.push("请填写有效尺寸后查看报价。");
   }
   elements.warningText.textContent = warnings.join(" ");
 }
@@ -264,19 +282,21 @@ function sync3dPreview() {
   previewFrame = requestAnimationFrame(() => {
     previewFrame = 0;
     previewHasUpdated = true;
-    cabinetPreview.update({
+    const previewConfig = {
       layout: state.layout,
-      frontLength: state.frontLength,
-      leftLength: state.leftLength,
-      rightLength: state.rightLength,
-      height: state.height,
-      depth: state.depth,
+      frontLength: previewNumber(state.frontLength, 3000, 500, 12000),
+      leftLength: previewNumber(state.leftLength, 1800, 300, 12000),
+      rightLength: previewNumber(state.rightLength, 1800, 300, 12000),
+      height: previewNumber(state.height, 2400, 800, 5000),
+      depth: previewNumber(state.depth, 500, 100, 1500),
+    };
+    cabinetPreview.update({
+      ...previewConfig,
     });
   });
 }
 
 function render() {
-  syncInputs();
   renderLayoutButtons();
   renderPreviewScale();
   renderQuote();
@@ -288,10 +308,6 @@ function bindValue(key) {
 
   input.addEventListener("input", (event) => {
     setValue(key, event.target.value);
-  });
-
-  input.addEventListener("blur", () => {
-    syncInputs();
   });
 }
 
@@ -319,11 +335,11 @@ function quotePayload() {
     material: state.material,
     materialName: materialMeta[state.material],
     dimensions: {
-      frontLength: state.frontLength,
-      leftLength: state.leftLength,
-      rightLength: state.rightLength,
-      height: state.height,
-      depth: state.depth,
+      frontLength: toDimensionValue(state.frontLength),
+      leftLength: toDimensionValue(state.leftLength),
+      rightLength: toDimensionValue(state.rightLength),
+      height: toDimensionValue(state.height),
+      depth: toDimensionValue(state.depth),
     },
     unitPrice: getUnitPrice(),
     grossLength: getGrossLength(),
@@ -341,6 +357,12 @@ async function unlockQuote() {
     render();
     elements.warningText.textContent = "请输入有效的 11 位中国大陆手机号后查看报价。";
     elements.phoneInput.focus();
+    return;
+  }
+  if (getBillableArea() <= 0) {
+    state.quoteUnlocked = false;
+    render();
+    elements.warningText.textContent = "请先填写有效尺寸，再查看报价。";
     return;
   }
 
@@ -382,4 +404,5 @@ elements.phoneInput.addEventListener("input", (event) => {
 elements.viewQuoteButton.addEventListener("click", unlockQuote);
 
 loadSettings();
+syncStaticInputs();
 render();
